@@ -5,7 +5,7 @@ let w = (c.width = window.innerWidth),
 (hh = h / 2),
   (opts = {
     // change the text in here //
-    strings: ["İYİKİ", "DOĞDUN", "YİĞİT"],
+    strings: ["İYİKİ", "DOĞDUN", "NİLÜFER"],
     charSize: 30,
     charSpacing: 35,
     lineHeight: 40,
