@@ -1,10 +1,13 @@
-let w = (c.width = window.innerWidth),
-  h = (c.height = window.innerHeight),
-  ctx = c.getContext("2d"),
-  hw = w / 2;
-(hh = h / 2),
-  (opts = {
-    // change the text in here //
+<canvas id="c"></canvas>
+<script>
+  const c = document.getElementById("c");
+  let w = (c.width = window.innerWidth),
+    h = (c.height = window.innerHeight),
+    ctx = c.getContext("2d"),
+    hw = w / 2,
+    hh = h / 2;
+
+  const opts = {
     strings: ["İYİKİ", "DOĞDUN", "NİLÜFER"],
     charSize: 30,
     charSpacing: 35,
@@ -16,45 +19,45 @@ let w = (c.width = window.innerWidth),
     fireworkPrevPoints: 10,
     fireworkBaseLineWidth: 5,
     fireworkAddedLineWidth: 8,
-    fireworkSpawnTime: 200,
-    fireworkBaseReachTime: 30,
-    fireworkAddedReachTime: 30,
+    fireworkSpawnTime: 400, // YAVAŞLATILDI
+    fireworkBaseReachTime: 60, // YAVAŞLATILDI
+    fireworkAddedReachTime: 60, // YAVAŞLATILDI
     fireworkCircleBaseSize: 20,
     fireworkCircleAddedSize: 10,
-    fireworkCircleBaseTime: 30,
-    fireworkCircleAddedTime: 30,
-    fireworkCircleFadeBaseTime: 10,
-    fireworkCircleFadeAddedTime: 5,
+    fireworkCircleBaseTime: 60, // YAVAŞLATILDI
+    fireworkCircleAddedTime: 30, // YAVAŞLATILDI
+    fireworkCircleFadeBaseTime: 30, // YAVAŞLATILDI
+    fireworkCircleFadeAddedTime: 20, // YAVAŞLATILDI
     fireworkBaseShards: 5,
     fireworkAddedShards: 5,
     fireworkShardPrevPoints: 3,
-    fireworkShardBaseVel: 4,
-    fireworkShardAddedVel: 2,
+    fireworkShardBaseVel: 2, // YAVAŞLATILDI
+    fireworkShardAddedVel: 1.5, // YAVAŞLATILDI
     fireworkShardBaseSize: 3,
     fireworkShardAddedSize: 3,
-    gravity: 0.1,
-    upFlow: -0.1,
-    letterContemplatingWaitTime: 360,
-    balloonSpawnTime: 20,
-    balloonBaseInflateTime: 10,
-    balloonAddedInflateTime: 10,
+    gravity: 0.05, // YAVAŞLATILDI
+    upFlow: -0.05, // YAVAŞLATILDI
+    letterContemplatingWaitTime: 600, // YAVAŞLATILDI
+    balloonSpawnTime: 50, // YAVAŞLATILDI
+    balloonBaseInflateTime: 30, // YAVAŞLATILDI
+    balloonAddedInflateTime: 20, // YAVAŞLATILDI
     balloonBaseSize: 20,
     balloonAddedSize: 20,
-    balloonBaseVel: 0.4,
-    balloonAddedVel: 0.4,
+    balloonBaseVel: 0.2, // YAVAŞLATILDI
+    balloonAddedVel: 0.2, // YAVAŞLATILDI
     balloonBaseRadian: -(Math.PI / 2 - 0.5),
     balloonAddedRadian: -1,
-  }),
-  (calc = {
-    totalWidth:
-      opts.charSpacing *
-      Math.max(opts.strings[0].length, opts.strings[1].length),
-  }),
-  (Tau = Math.PI * 2),
-  (TauQuarter = Tau / 4),
-  (letters = []);
+  };
 
-ctx.font = opts.charSize + "px Verdana";
+  const calc = {
+    totalWidth: opts.charSpacing * Math.max(...opts.strings.map((s) => s.length)),
+  };
+
+  const Tau = Math.PI * 2;
+  const TauQuarter = Tau / 4;
+  const letters = [];
+
+  ctx.font = opts.charSize + "px Verdana";
 
 function Letter(char, x, y) {
   this.char = char;
