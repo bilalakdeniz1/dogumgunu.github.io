@@ -1,3 +1,4 @@
+const c = document.getElementById("c");
 let w = (c.width = window.innerWidth),
   h = (c.height = window.innerHeight),
   ctx = c.getContext("2d"),
@@ -9,73 +10,45 @@ const opts = {
   charSize: 30,
   charSpacing: 35,
   lineHeight: 40,
-
   cx: w / 2,
   cy: h / 2,
-
   fireworkPrevPoints: 10,
   fireworkBaseLineWidth: 5,
   fireworkAddedLineWidth: 8,
-  fireworkSpawnTime: 800,
-  fireworkBaseReachTime: 100,
+  fireworkSpawnTime: 400,
+  fireworkBaseReachTime: 60,
   fireworkAddedReachTime: 60,
   fireworkCircleBaseSize: 20,
   fireworkCircleAddedSize: 10,
-  fireworkCircleBaseTime: 80,
-  fireworkCircleAddedTime: 40,
-  fireworkCircleFadeBaseTime: 40,
-  fireworkCircleFadeAddedTime: 20,
+  fireworkCircleBaseTime: 60,
+  fireworkCircleAddedTime: 60,
+  fireworkCircleFadeBaseTime: 20,
+  fireworkCircleFadeAddedTime: 10,
   fireworkBaseShards: 5,
   fireworkAddedShards: 5,
   fireworkShardPrevPoints: 3,
-  fireworkShardBaseVel: 1.5,
-  fireworkShardAddedVel: 0.8,
+  fireworkShardBaseVel: 4,
+  fireworkShardAddedVel: 2,
   fireworkShardBaseSize: 3,
   fireworkShardAddedSize: 3,
-  gravity: 0.05,
-  upFlow: -0.05,
-  letterContemplatingWaitTime: 1000,
-  balloonSpawnTime: 120,
-  balloonBaseInflateTime: 50,
-  balloonAddedInflateTime: 40,
+  gravity: 0.1,
+  upFlow: -0.1,
+  letterContemplatingWaitTime: 600,
+  balloonSpawnTime: 40,
+  balloonBaseInflateTime: 20,
+  balloonAddedInflateTime: 20,
   balloonBaseSize: 20,
   balloonAddedSize: 20,
-  balloonBaseVel: 0.12,
-  balloonAddedVel: 0.12,
+  balloonBaseVel: 0.3,
+  balloonAddedVel: 0.3,
   balloonBaseRadian: -(Math.PI / 2 - 0.5),
   balloonAddedRadian: -1,
 };
 
-const emojis = ["🎂", "🎉", "🎈"];
-const emojiPositions = [];
-
-for (let i = 0; i < 30; i++) {
-  emojiPositions.push({
-    x: Math.random() * w - w / 2,
-    y: Math.random() * h - h / 2,
-    emoji: emojis[Math.floor(Math.random() * emojis.length)],
-    size: 24 + Math.random() * 30,
-  });
-}
-
-function drawBackgroundEmojis() {
-  for (let i = 0; i < emojiPositions.length; i++) {
-    const e = emojiPositions[i];
-    ctx.font = e.size + "px serif";
-    ctx.fillText(e.emoji, e.x, e.y);
-  }
-}
-
-function drawBigCakeEmoji() {
-  ctx.font = "100px serif";
-  ctx.textAlign = "center";
-  ctx.fillText("🎂", 0, hh + 150);
-}
-
 const calc = {
-  totalWidth:
-    opts.charSpacing * Math.max(opts.strings[0].length, opts.strings[1].length),
+  totalWidth: opts.charSpacing * Math.max(...opts.strings.map(s => s.length)),
 };
+
 const Tau = Math.PI * 2;
 const TauQuarter = Tau / 4;
 const letters = [];
@@ -86,11 +59,12 @@ function Letter(char, x, y) {
   this.char = char;
   this.x = x;
   this.y = y;
+
   this.dx = -ctx.measureText(char).width / 2;
-  this.dy = +opts.charSize / 2;
+  this.dy = opts.charSize / 2;
   this.fireworkDy = this.y - hh;
 
-  var hue = (x / calc.totalWidth) * 360;
+  const hue = (x / calc.totalWidth) * 360;
 
   this.color = `hsl(${hue},80%,50%)`;
   this.lightAlphaColor = `hsla(${hue},80%,light%,alp)`;
@@ -106,7 +80,8 @@ Letter.prototype.reset = function () {
   this.spawned = false;
   this.spawningTime = (opts.fireworkSpawnTime * Math.random()) | 0;
   this.reachTime =
-    (opts.fireworkBaseReachTime + opts.fireworkAddedReachTime * Math.random()) | 0;
+    (opts.fireworkBaseReachTime +
+      opts.fireworkAddedReachTime * Math.random()) | 0;
   this.lineWidth =
     opts.fireworkBaseLineWidth + opts.fireworkAddedLineWidth * Math.random();
   this.prevPoints = [[0, hh, 0]];
@@ -122,30 +97,29 @@ Letter.prototype.step = function () {
       }
     } else {
       ++this.tick;
-      var linearProportion = this.tick / this.reachTime,
-        armonicProportion = Math.sin(linearProportion * TauQuarter),
-        x = linearProportion * this.x,
-        y = hh + armonicProportion * this.fireworkDy;
+
+      const linearProportion = this.tick / this.reachTime;
+      const armonicProportion = Math.sin(linearProportion * TauQuarter);
+      const x = linearProportion * this.x;
+      const y = hh + armonicProportion * this.fireworkDy;
 
       if (this.prevPoints.length > opts.fireworkPrevPoints)
         this.prevPoints.shift();
-
       this.prevPoints.push([x, y, linearProportion * this.lineWidth]);
 
-      var lineWidthProportion = 1 / (this.prevPoints.length - 1);
-
-      for (var i = 1; i < this.prevPoints.length; ++i) {
-        var point = this.prevPoints[i],
-          point2 = this.prevPoints[i - 1];
+      const lineWidthProportion = 1 / (this.prevPoints.length - 1);
+      for (let i = 1; i < this.prevPoints.length; ++i) {
+        const [x1, y1, w1] = this.prevPoints[i];
+        const [x2, y2] = this.prevPoints[i - 1];
 
         ctx.strokeStyle = this.alphaColor.replace(
           "alp",
           i / this.prevPoints.length
         );
-        ctx.lineWidth = point[2] * lineWidthProportion * i;
+        ctx.lineWidth = w1 * lineWidthProportion * i;
         ctx.beginPath();
-        ctx.moveTo(point[0], point[1]);
-        ctx.lineTo(point2[0], point2[1]);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
         ctx.stroke();
       }
 
@@ -156,30 +130,26 @@ Letter.prototype.step = function () {
           opts.fireworkCircleAddedSize * Math.random();
         this.circleCompleteTime =
           (opts.fireworkCircleBaseTime +
-            opts.fireworkCircleAddedTime * Math.random()) |
-          0;
+            opts.fireworkCircleAddedTime * Math.random()) | 0;
         this.circleCreating = true;
         this.circleFading = false;
         this.circleFadeTime =
           (opts.fireworkCircleFadeBaseTime +
-            opts.fireworkCircleFadeAddedTime * Math.random()) |
-          0;
+            opts.fireworkCircleFadeAddedTime * Math.random()) | 0;
         this.tick = 0;
         this.tick2 = 0;
         this.shards = [];
 
-        var shardCount =
-            (opts.fireworkBaseShards +
-              opts.fireworkAddedShards * Math.random()) |
-            0,
-          angle = Tau / shardCount,
-          cos = Math.cos(angle),
-          sin = Math.sin(angle),
-          x = 1,
-          y = 0;
-
-        for (var i = 0; i < shardCount; ++i) {
-          var x1 = x;
+        const shardCount =
+          (opts.fireworkBaseShards +
+            opts.fireworkAddedShards * Math.random()) | 0;
+        const angle = Tau / shardCount;
+        let cos = Math.cos(angle);
+        let sin = Math.sin(angle);
+        let x = 1;
+        let y = 0;
+        for (let i = 0; i < shardCount; ++i) {
+          let x1 = x;
           x = x * cos - y * sin;
           y = y * cos + x1 * sin;
           this.shards.push(new Shard(this.x, this.y, x, y, this.alphaColor));
@@ -191,8 +161,8 @@ Letter.prototype.step = function () {
 
     if (this.circleCreating) {
       ++this.tick2;
-      var proportion = this.tick2 / this.circleCompleteTime,
-        armonic = -Math.cos(proportion * Math.PI) / 2 + 0.5;
+      const proportion = this.tick2 / this.circleCompleteTime;
+      const armonic = -Math.cos(proportion * Math.PI) / 2 + 0.5;
 
       ctx.beginPath();
       ctx.fillStyle = this.lightAlphaColor
@@ -211,8 +181,8 @@ Letter.prototype.step = function () {
       ctx.fillText(this.char, this.x + this.dx, this.y + this.dy);
 
       ++this.tick2;
-      var proportion = this.tick2 / this.circleFadeTime,
-        armonic = -Math.cos(proportion * Math.PI) / 2 + 0.5;
+      const proportion = this.tick2 / this.circleFadeTime;
+      const armonic = -Math.cos(proportion * Math.PI) / 2 + 0.5;
 
       ctx.beginPath();
       ctx.fillStyle = this.lightAlphaColor
@@ -227,7 +197,7 @@ Letter.prototype.step = function () {
       ctx.fillText(this.char, this.x + this.dx, this.y + this.dy);
     }
 
-    for (var i = 0; i < this.shards.length; ++i) {
+    for (let i = 0; i < this.shards.length; ++i) {
       this.shards[i].step();
       if (!this.shards[i].alive) {
         this.shards.splice(i, 1);
@@ -243,14 +213,13 @@ Letter.prototype.step = function () {
       this.inflating = false;
       this.inflateTime =
         (opts.balloonBaseInflateTime +
-          opts.balloonAddedInflateTime * Math.random()) |
-        0;
+          opts.balloonAddedInflateTime * Math.random()) | 0;
       this.size =
         (opts.balloonBaseSize + opts.balloonAddedSize * Math.random()) | 0;
 
-      var rad =
-          opts.balloonBaseRadian + opts.balloonAddedRadian * Math.random(),
-        vel = opts.balloonBaseVel + opts.balloonAddedVel * Math.random();
+      const rad =
+        opts.balloonBaseRadian + opts.balloonAddedRadian * Math.random();
+      const vel = opts.balloonBaseVel + opts.balloonAddedVel * Math.random();
 
       this.vx = Math.cos(rad) * vel;
       this.vy = Math.sin(rad) * vel;
@@ -271,9 +240,9 @@ Letter.prototype.step = function () {
     } else if (this.inflating) {
       ++this.tick;
 
-      var proportion = this.tick / this.inflateTime,
-        x = (this.cx = this.x),
-        y = (this.cy = this.y - this.size * proportion);
+      const proportion = this.tick / this.inflateTime;
+      const x = (this.cx = this.x);
+      const y = (this.cy = this.y - this.size * proportion);
 
       ctx.fillStyle = this.alphaColor.replace("alp", proportion);
       ctx.beginPath();
@@ -307,7 +276,11 @@ Letter.prototype.step = function () {
       ctx.stroke();
 
       ctx.fillStyle = this.lightColor.replace("light", 70);
-      ctx.fillText(this.char, this.cx + this.dx, this.cy + this.dy + this.size);
+      ctx.fillText(
+        this.char,
+        this.cx + this.dx,
+        this.cy + this.dy + this.size
+      );
 
       if (this.cy + this.size < -hh || this.cx < -hw || this.cy > hw)
         this.phase = "done";
@@ -316,7 +289,7 @@ Letter.prototype.step = function () {
 };
 
 function Shard(x, y, vx, vy, color) {
-  var vel =
+  const vel =
     opts.fireworkShardBaseVel + opts.fireworkShardAddedVel * Math.random();
 
   this.vx = vx * vel;
@@ -327,9 +300,7 @@ function Shard(x, y, vx, vy, color) {
 
   this.prevPoints = [[x, y]];
   this.color = color;
-
   this.alive = true;
-
   this.size =
     opts.fireworkShardBaseSize + opts.fireworkShardAddedSize * Math.random();
 }
@@ -340,20 +311,18 @@ Shard.prototype.step = function () {
 
   if (this.prevPoints.length > opts.fireworkShardPrevPoints)
     this.prevPoints.shift();
-
   this.prevPoints.push([this.x, this.y]);
 
-  var lineWidthProportion = this.size / this.prevPoints.length;
+  const lineWidthProportion = this.size / this.prevPoints.length;
+  for (let i = 0; i < this.prevPoints.length - 1; ++i) {
+    const [x1, y1] = this.prevPoints[i];
+    const [x2, y2] = this.prevPoints[i + 1];
 
-  for (var k = 0; k < this.prevPoints.length - 1; ++k) {
-    var point = this.prevPoints[k],
-      point2 = this.prevPoints[k + 1];
-
-    ctx.strokeStyle = this.color.replace("alp", k / this.prevPoints.length);
-    ctx.lineWidth = k * lineWidthProportion;
+    ctx.strokeStyle = this.color.replace("alp", i / this.prevPoints.length);
+    ctx.lineWidth = i * lineWidthProportion;
     ctx.beginPath();
-    ctx.moveTo(point[0], point[1]);
-    ctx.lineTo(point2[0], point2[1]);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
     ctx.stroke();
   }
 
@@ -379,25 +348,25 @@ function anim() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, w, h);
 
-  ctx.save();
+  // 🎂 Arka plana pasta emojisi çiziyoruz
+  ctx.font = "100px serif";
+  ctx.fillText("🎂", hw - 50, hh + 180);
+
   ctx.translate(hw, hh);
 
-  drawBackgroundEmojis(); // 🎈🎉🎂
-  drawBigCakeEmoji();     // 🎂 ortada
-
-  var done = true;
-  for (var l = 0; l < letters.length; ++l) {
+  let done = true;
+  for (let l = 0; l < letters.length; ++l) {
     letters[l].step();
     if (letters[l].phase !== "done") done = false;
   }
 
-  ctx.restore();
+  ctx.translate(-hw, -hh);
 
-  if (done) for (var l = 0; l < letters.length; ++l) letters[l].reset();
+  if (done) for (let l = 0; l < letters.length; ++l) letters[l].reset();
 }
 
 for (let i = 0; i < opts.strings.length; ++i) {
-  for (var j = 0; j < opts.strings[i].length; ++j) {
+  for (let j = 0; j < opts.strings[i].length; ++j) {
     letters.push(
       new Letter(
         opts.strings[i][j],
@@ -414,7 +383,7 @@ for (let i = 0; i < opts.strings.length; ++i) {
 
 anim();
 
-window.addEventListener("resize", function () {
+window.addEventListener("resize", () => {
   w = c.width = window.innerWidth;
   h = c.height = window.innerHeight;
   hw = w / 2;
