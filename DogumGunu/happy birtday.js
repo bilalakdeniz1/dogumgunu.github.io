@@ -14,11 +14,11 @@ let w = (c.width = window.innerWidth),
     cy: h / 2,
 
     fireworkPrevPoints: 10,
-    fireworkBaseLineWidth: 5,f
+    fireworkBaseLineWidth: 5,
     fireworkAddedLineWidth: 8,
-    fireworkSpawnTime: 400,
-    fireworkBaseReachTime: 60,
-    fireworkAddedReachTime: 60,
+    fireworkSpawnTime: 200,
+    fireworkBaseReachTime: 30,
+    fireworkAddedReachTime: 30,
     fireworkCircleBaseSize: 20,
     fireworkCircleAddedSize: 10,
     fireworkCircleBaseTime: 30,
@@ -359,11 +359,6 @@ function anim() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, w, h);
 
-  // 🎂 Arka plana tek bir büyük pasta emojisi
-  ctx.font = "100px Segoe UI Emoji";
-  ctx.textAlign = "center";
-  ctx.fillText("🎂", hw, hh + 150);
-
   ctx.translate(hw, hh);
 
   var done = true;
@@ -375,7 +370,6 @@ function anim() {
   ctx.translate(-hw, -hh);
 
   if (done) for (var l = 0; l < letters.length; ++l) letters[l].reset();
-}
 }
 
 for (let i = 0; i < opts.strings.length; ++i) {
